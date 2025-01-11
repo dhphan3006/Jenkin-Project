@@ -2,19 +2,27 @@ pipeline {
     agent any
 
     stages {
-        stage('Test') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
-            }
+        stage('Build') {
             steps {
-                // Check if there is index.html file in build directory
-                echo 'Test stage'
-                //sh 'test -f build/index.html'
-                // run npm test command
-                //sh 'npm test'
+                echo 'Building the project...'
+                sh '''
+                    npm install
+                    npm run build
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Verifying the index.html file exists...'
+                sh '''
+                    if [ -f build/index.html ]; then
+                        echo "File index.html exists in the build directory."
+                    else
+                        echo "File index.html does not exist in the build directory."
+                        exit 1
+                    fi
+                '''
             }
         }
     }
